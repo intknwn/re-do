@@ -1,6 +1,13 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { filter } from '@chakra-ui/react';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { Colors } from '../../config';
 import { getMaxId } from '../../helpers';
+
+import {
+  selectStatus,
+  selectColors,
+  StatusFilters,
+} from '../filters/filtersSlice';
 
 const initialState = [
   { id: 1, text: 'Learn HTML', color: Colors.PINK, isCompleted: true },
@@ -82,6 +89,28 @@ const todosSlice = createSlice({
 });
 
 export const selectTodos = state => state.todos;
+
+export const selectFilteredTodos = createSelector(
+  selectTodos,
+  selectStatus,
+  selectColors,
+  (todos, status, colors) => {
+    const isAllStatus = status === StatusFilters.ALL;
+
+    if (isAllStatus && !colors.length) {
+      return todos;
+    }
+
+    const isCompleted = status === StatusFilters.COMPLETED;
+
+    return todos.filter(todo => {
+      const statusMatches = isAllStatus || todo.isCompleted === isCompleted;
+      const colorMatches = !colors.length || colors.includes(todo.color);
+
+      return statusMatches && colorMatches;
+    });
+  }
+);
 
 export const {
   todoAdded,
