@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 import {
   Stack,
@@ -11,10 +12,29 @@ import {
 
 import { AddIcon } from '@chakra-ui/icons';
 
-const TodoInput = () => {
-  const [todoText, setTodoText] = useState('');
+import { todoAdded } from '../../features/todos/todosSlice';
 
-  const onChangeHandler = e => setTodoText(e.target.value);
+const TodoInput = () => {
+  const [inputValue, setInputValue] = useState('');
+  const dispatch = useDispatch();
+
+  const onChangeHandler = e => setInputValue(e.target.value);
+
+  const keyDownHandler = e => {
+    const value = e.target.value.trim();
+
+    if (value && e.key === 'Enter') {
+      dispatch(todoAdded(value));
+
+      setInputValue('');
+    }
+  };
+
+  const addTodoHandler = () => {
+    dispatch(todoAdded(inputValue));
+
+    setInputValue('');
+  };
 
   return (
     <Stack
@@ -29,8 +49,9 @@ const TodoInput = () => {
         <Input
           placeholder="What needs to be done?"
           bg="white"
-          value={todoText}
+          value={inputValue}
           onChange={onChangeHandler}
+          onKeyDown={keyDownHandler}
         />
         <InputRightElement w="16">
           <Kbd size="xs" opacity="0.5">
@@ -38,7 +59,7 @@ const TodoInput = () => {
           </Kbd>
         </InputRightElement>
       </InputGroup>
-      <IconButton size="sm" icon={<AddIcon />} />
+      <IconButton size="sm" icon={<AddIcon />} onClick={addTodoHandler} />
     </Stack>
   );
 };
