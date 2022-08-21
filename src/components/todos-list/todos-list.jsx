@@ -6,10 +6,10 @@ import { Stack, List } from '@chakra-ui/react';
 import TodoItem from '../../components/todo-item/todo-item';
 import Filters from '../../components/filters/filters';
 
-import { selectTodos } from '../../features/todos/todosSlice';
+import { selectFilteredTodos } from '../../features/todos/todosSlice';
 
 const TodosList = () => {
-  const todos = useSelector(selectTodos);
+  const todos = useSelector(selectFilteredTodos);
 
   return (
     <Stack
