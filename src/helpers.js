@@ -12,3 +12,5 @@ export const getMonth = () =>
   new Date().toLocaleDateString('en-US', {
     month: 'long',
   });
+
+export const getMaxId = state => Math.max(...state.map(item => item.id));
