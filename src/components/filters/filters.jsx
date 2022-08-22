@@ -26,6 +26,11 @@ import {
   colorChanged,
 } from '../../features/filters/filtersSlice';
 
+import {
+  statusSortingChanged,
+  StatusSorting,
+} from '../../features/sorting/sortingSlice';
+
 const Filters = () => {
   const dispatch = useDispatch();
 
@@ -35,8 +40,22 @@ const Filters = () => {
     </MenuItemOption>
   ));
 
+  const sortingOptions = Object.values(StatusSorting).map(statusSorting => {
+    const capitalized = capitalize(statusSorting);
+
+    return (
+      <MenuItemOption key={statusSorting} value={statusSorting}>
+        {statusSorting !== StatusSorting.ORIGINAL
+          ? `${capitalized} First`
+          : capitalized}
+      </MenuItemOption>
+    );
+  });
+
   const statusChangeHadler = status => dispatch(statusChanged(status));
   const colorChangeHandler = colors => dispatch(colorChanged(colors));
+  const statusSortingChangeHandler = status =>
+    dispatch(statusSortingChanged(status));
 
   return (
     <Stack direction="row" justifyContent="start" mb="2">
@@ -80,9 +99,13 @@ const Filters = () => {
           variant="outline"
         />
         <MenuList zIndex="10">
-          <MenuOptionGroup title="Status" type="radio">
-            <MenuItemOption value="all">Completed</MenuItemOption>
-            <MenuItemOption value="active">Active</MenuItemOption>
+          <MenuOptionGroup
+            title="Order"
+            type="radio"
+            onChange={statusSortingChangeHandler}
+            defaultValue={StatusSorting.NONE}
+          >
+            {sortingOptions}
           </MenuOptionGroup>
           <MenuDivider />
           <MenuOptionGroup title="Date" type="radio">
