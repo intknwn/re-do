@@ -1,4 +1,3 @@
-import { filter } from '@chakra-ui/react';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { Colors } from '../../config';
 import { getMaxId } from '../../helpers';
@@ -9,8 +8,13 @@ import {
   StatusFilters,
 } from '../filters/filtersSlice';
 
+import {
+  selectStatusSortingType,
+  StatusSorting,
+} from '../sorting/sortingSlice';
+
 const initialState = [
-  { id: 1, text: 'Learn HTML', color: Colors.PINK, isCompleted: true },
+  { id: 1, text: 'Learn HTML', color: Colors.PINK, isCompleted: false },
   { id: 2, text: 'Learn CSS', color: Colors.BLUE, isCompleted: true },
   { id: 3, text: 'Learn JS', color: Colors.ORANGE, isCompleted: false },
 ];
@@ -110,6 +114,39 @@ export const selectFilteredTodos = createSelector(
       return statusMatches && colorMatches;
     });
   }
+);
+
+export const getSortedByStatusTodos = createSelector(
+  selectFilteredTodos,
+  selectStatusSortingType,
+  (todos, status) =>
+    status !== StatusSorting.ORIGINAL
+      ? [...todos].sort((leftTodo, rightTodo) => {
+          const checkIfCompleted = todo => todo.isCompleted === true;
+
+          if (status === StatusSorting.COMPLETED) {
+            if (!checkIfCompleted(leftTodo) && checkIfCompleted(rightTodo)) {
+              return 1;
+            }
+
+            if (checkIfCompleted(leftTodo) && !checkIfCompleted(rightTodo)) {
+              return -1;
+            }
+          }
+
+          if (status === StatusSorting.ACTIVE) {
+            if (checkIfCompleted(leftTodo) && !checkIfCompleted(rightTodo)) {
+              return 1;
+            }
+
+            if (!checkIfCompleted(leftTodo) && checkIfCompleted(rightTodo)) {
+              return -1;
+            }
+          }
+
+          return 0;
+        })
+      : todos
 );
 
 export const {

@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import todosReducer from './features/todos/todosSlice';
-import filtersReduces from './features/filters/filtersSlice';
+import filtersReducers from './features/filters/filtersSlice';
+import sortingReducer from './features/sorting/sortingSlice';
 
 const store = configureStore({
   reducer: {
     todos: todosReducer,
-    filters: filtersReduces,
+    filters: filtersReducers,
+    sorting: sortingReducer,
   },
 });
 
