@@ -8,25 +8,52 @@ import {
   StatusFilters,
 } from '../filters/filtersSlice';
 
-import {
-  selectStatusSortingType,
-  StatusSorting,
-} from '../sorting/sortingSlice';
+import { selectSortType, SortType } from '../sorting/sortingSlice';
 
 const initialState = [
-  { id: 1, text: 'Learn HTML', color: Colors.PINK, isCompleted: false },
-  { id: 2, text: 'Learn CSS', color: Colors.BLUE, isCompleted: true },
-  { id: 3, text: 'Learn JS', color: Colors.ORANGE, isCompleted: false },
+  {
+    id: 1,
+    text: 'Learn HTML',
+    color: Colors.PINK,
+    isCompleted: false,
+    created: '2022-08-23T17:55:12.403Z',
+  },
+  {
+    id: 2,
+    text: 'Learn CSS',
+    color: Colors.BLUE,
+    isCompleted: true,
+    created: '2022-08-22T17:55:12.403Z',
+  },
+  {
+    id: 3,
+    text: 'Learn JS',
+    color: Colors.ORANGE,
+    isCompleted: false,
+    created: '2022-08-21T17:55:12.403Z',
+  },
 ];
 
 const todosSlice = createSlice({
   name: 'todos',
   initialState,
   reducers: {
-    todoAdded(state, action) {
-      const id = getMaxId(state) + 1;
+    todoAdded: {
+      reducer(state, action) {
+        const { text, created, isCompleted } = action.payload;
+        const id = getMaxId(state) + 1;
 
-      return [...state, { id, text: action.payload, isCompleted: false }];
+        return [...state, { id, text, created, isCompleted }];
+      },
+      prepare(text) {
+        return {
+          payload: {
+            text,
+            created: new Date().toISOString(),
+            isCompleted: false,
+          },
+        };
+      },
     },
     todoDeleted(state, action) {
       const id = action.payload;
@@ -116,37 +143,44 @@ export const selectFilteredTodos = createSelector(
   }
 );
 
-export const getSortedByStatusTodos = createSelector(
+export const selectSortedTodos = createSelector(
   selectFilteredTodos,
-  selectStatusSortingType,
-  (todos, status) =>
-    status !== StatusSorting.ORIGINAL
-      ? [...todos].sort((leftTodo, rightTodo) => {
-          const checkIfCompleted = todo => todo.isCompleted === true;
+  selectSortType,
+  (todos, sortType) => {
+    const checkIfCompleted = todo => todo.isCompleted === true;
+    const getTodoTime = todo => new Date(todo.created).getTime();
 
-          if (status === StatusSorting.COMPLETED) {
-            if (!checkIfCompleted(leftTodo) && checkIfCompleted(rightTodo)) {
-              return 1;
-            }
+    const SortFn = {
+      [SortType.COMPLETED]: (leftTodo, rightTodo) => {
+        if (!checkIfCompleted(leftTodo) && checkIfCompleted(rightTodo)) {
+          return 1;
+        }
 
-            if (checkIfCompleted(leftTodo) && !checkIfCompleted(rightTodo)) {
-              return -1;
-            }
-          }
+        if (checkIfCompleted(leftTodo) && !checkIfCompleted(rightTodo)) {
+          return -1;
+        }
 
-          if (status === StatusSorting.ACTIVE) {
-            if (checkIfCompleted(leftTodo) && !checkIfCompleted(rightTodo)) {
-              return 1;
-            }
+        return 0;
+      },
+      [SortType.ACTIVE]: (leftTodo, rightTodo) => {
+        if (checkIfCompleted(leftTodo) && !checkIfCompleted(rightTodo)) {
+          return 1;
+        }
 
-            if (!checkIfCompleted(leftTodo) && checkIfCompleted(rightTodo)) {
-              return -1;
-            }
-          }
+        if (!checkIfCompleted(leftTodo) && checkIfCompleted(rightTodo)) {
+          return -1;
+        }
 
-          return 0;
-        })
-      : todos
+        return 0;
+      },
+      [SortType.NEWER]: (leftTodo, rightTodo) =>
+        getTodoTime(rightTodo) - getTodoTime(leftTodo),
+      [SortType.OLDER]: (leftTodo, rightTodo) =>
+        getTodoTime(leftTodo) - getTodoTime(rightTodo),
+    };
+
+    return [...todos].sort(SortFn[sortType]);
+  }
 );
 
 export const {
