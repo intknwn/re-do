@@ -1,28 +1,28 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-export const StatusSorting = {
-  ORIGINAL: `original`,
+export const SortType = {
   COMPLETED: `completed`,
   ACTIVE: `active`,
+  NEWER: `newer`,
+  OLDER: `older`,
 };
 
 const initialState = {
-  status: StatusSorting.ORIGINAL,
-  date: null,
+  sortType: null,
 };
 
 const sortingSlice = createSlice({
   name: 'sorting',
   initialState,
   reducers: {
-    statusSortingChanged(state, action) {
-      return { ...state, status: action.payload };
+    sortTypeChanged(state, action) {
+      return { ...state, sortType: action.payload };
     },
   },
 });
 
-export const selectStatusSortingType = state => state.sorting.status;
+export const selectSortType = state => state.sorting.sortType;
 
-export const { statusSortingChanged } = sortingSlice.actions;
+export const { sortTypeChanged } = sortingSlice.actions;
 
 export default sortingSlice.reducer;

@@ -9,6 +9,7 @@ import {
   ListItem,
   Button,
   Box,
+  Text,
 } from '@chakra-ui/react';
 
 import { CheckIcon } from '@chakra-ui/icons';
@@ -19,6 +20,7 @@ import {
 } from '../../features/todos/todosSlice';
 
 import EditableControls from '../editable-controls/editable-controls';
+import { theme } from '../../theme';
 
 const TodoItem = ({ todo }) => {
   const dispatch = useDispatch();
@@ -59,6 +61,19 @@ const TodoItem = ({ todo }) => {
       borderColor="gray.200"
       borderRadius="10"
     >
+      <Text
+        fontSize="sm"
+        pos="absolute"
+        left="2"
+        top="-7"
+        color={theme.colors.blue[500]}
+      >
+        {new Date(todo.created).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </Text>
       <Box
         pos="absolute"
         top="0"

@@ -26,10 +26,7 @@ import {
   colorChanged,
 } from '../../features/filters/filtersSlice';
 
-import {
-  statusSortingChanged,
-  StatusSorting,
-} from '../../features/sorting/sortingSlice';
+import { sortTypeChanged, SortType } from '../../features/sorting/sortingSlice';
 
 const Filters = () => {
   const dispatch = useDispatch();
@@ -40,14 +37,12 @@ const Filters = () => {
     </MenuItemOption>
   ));
 
-  const sortingOptions = Object.values(StatusSorting).map(statusSorting => {
+  const sortingOptions = Object.values(SortType).map(statusSorting => {
     const capitalized = capitalize(statusSorting);
 
     return (
       <MenuItemOption key={statusSorting} value={statusSorting}>
-        {statusSorting !== StatusSorting.ORIGINAL
-          ? `${capitalized} First`
-          : capitalized}
+        {capitalized}
       </MenuItemOption>
     );
   });
@@ -55,10 +50,10 @@ const Filters = () => {
   const statusChangeHadler = status => dispatch(statusChanged(status));
   const colorChangeHandler = colors => dispatch(colorChanged(colors));
   const statusSortingChangeHandler = status =>
-    dispatch(statusSortingChanged(status));
+    dispatch(sortTypeChanged(status));
 
   return (
-    <Stack direction="row" justifyContent="start" mb="2">
+    <Stack direction="row" justifyContent="end" mb="2">
       <Menu closeOnSelect={false}>
         <MenuButton
           as={IconButton}
@@ -100,18 +95,13 @@ const Filters = () => {
         />
         <MenuList zIndex="10">
           <MenuOptionGroup
-            title="Order"
+            title="Order By"
             type="radio"
             onChange={statusSortingChangeHandler}
-            defaultValue={StatusSorting.NONE}
           >
             {sortingOptions}
           </MenuOptionGroup>
           <MenuDivider />
-          <MenuOptionGroup title="Date" type="radio">
-            <MenuItemOption value="newer">Newer</MenuItemOption>
-            <MenuItemOption value="older">Older</MenuItemOption>
-          </MenuOptionGroup>
         </MenuList>
       </Menu>
     </Stack>
