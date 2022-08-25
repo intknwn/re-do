@@ -1,11 +1,37 @@
-import { extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
+import {
+  theme as defaultTheme,
+  extendTheme,
+  withDefaultColorScheme,
+} from '@chakra-ui/react';
+import { mode } from '@chakra-ui/theme-tools';
+
+console.dir(defaultTheme.components);
 
 export const theme = extendTheme(
   {
-    styles: {
-      global: {
-        body: {
-          bg: 'white',
+    components: {
+      Stack: {
+        baseStyle: props => ({
+          bg: mode('gray.50', 'transparent')(props),
+          border: mode(`1px solid ${props.theme.colors.gray[50]}`, 'none'),
+        }),
+      },
+      Input: {
+        baseStyle: props => ({
+          field: {
+            bg: mode('white', 'transparent')(props),
+          },
+        }),
+        variants: {
+          outline: props => ({
+            field: {
+              ...defaultTheme.components.Input.variants.outline(props).field,
+              bg: mode('white', 'transparent')(props),
+            },
+          }),
+        },
+        defaultProps: {
+          variant: 'outline',
         },
       },
     },
@@ -14,3 +40,5 @@ export const theme = extendTheme(
     colorScheme: 'blue',
   })
 );
+
+console.dir(theme);

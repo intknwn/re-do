@@ -1,10 +1,12 @@
 import React, { StrictMode } from 'react';
 import { Provider } from 'react-redux';
 import * as ReactDOM from 'react-dom/client';
+import { ColorModeScript } from '@chakra-ui/react';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorker from './serviceWorker';
 import store from './store';
+import { theme } from './theme';
 
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
@@ -12,6 +14,7 @@ const root = ReactDOM.createRoot(container);
 root.render(
   <StrictMode>
     <Provider store={store}>
+      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <App />
     </Provider>
   </StrictMode>
