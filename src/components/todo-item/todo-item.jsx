@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
+  useColorModeValue,
   InputGroup,
   Editable,
   EditableInput,
@@ -29,6 +30,8 @@ const TodoItem = ({ todo }) => {
   const [text, setText] = useState(todo.text);
   const [demoColor, setDemoColor] = useState('');
 
+  const listItemBg = useColorModeValue('white', 'transparent');
+
   const todoTextChangeHandler = str => setText(str);
 
   const toggleTodoHandler = () => dispatch(todoToggled(todo.id));
@@ -56,10 +59,10 @@ const TodoItem = ({ todo }) => {
       pos="relative"
       h="16"
       py="2"
-      bg="white"
       border="1px"
       borderColor="gray.200"
       borderRadius="10"
+      bg={listItemBg}
     >
       <Text
         fontSize="sm"

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useColorModeValue } from '@chakra-ui/react';
 
 import {
-  Stack,
-  InputGroup,
   Input,
+  InputGroup,
   InputRightElement,
   Kbd,
   IconButton,
 } from '@chakra-ui/react';
+
+import Stack from '../styled/Stack';
 
 import { AddIcon } from '@chakra-ui/icons';
 
@@ -36,6 +38,8 @@ const TodoInput = () => {
     setInputValue('');
   };
 
+  const inputVariant = useColorModeValue('outline', 'flushed');
+
   return (
     <Stack
       direction="row"
@@ -43,15 +47,15 @@ const TodoInput = () => {
       borderRadius="10"
       padding="3"
       mb="7"
-      bg="gray.100"
+      gap="2"
     >
       <InputGroup size="md">
         <Input
           placeholder="What needs to be done?"
-          bg="white"
           value={inputValue}
           onChange={onChangeHandler}
           onKeyDown={keyDownHandler}
+          variant={inputVariant}
         />
         <InputRightElement w="16">
           <Kbd size="xs" opacity="0.5">

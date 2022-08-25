@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-import { Stack, List } from '@chakra-ui/react';
+import { List } from '@chakra-ui/react';
+import Stack from '../styled/Stack';
 
 import TodoItem from '../../components/todo-item/todo-item';
 import Filters from '../../components/filters/filters';
@@ -12,13 +13,7 @@ const TodosList = () => {
   const todos = useSelector(selectSortedTodos);
 
   return (
-    <Stack
-      direction="column"
-      bg="gray.50"
-      borderRadius="10"
-      spacing="3"
-      padding="3"
-    >
+    <Stack direction="column" borderRadius="10" spacing="5" padding="3">
       <Filters />
       <List spacing="10">
         {todos.map(todo => (
