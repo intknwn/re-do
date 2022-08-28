@@ -15,9 +15,9 @@ import {
 
 import { CheckIcon } from '@chakra-ui/icons';
 import {
-  todoToggled,
-  todoTextEdited,
-  todoColorChanged,
+  todoToggledAsync,
+  todoTextEditedAsync,
+  todoColorChangedAsync,
 } from '../../features/todos/todosSlice';
 
 import EditableControls from '../editable-controls/editable-controls';
@@ -34,17 +34,17 @@ const TodoItem = ({ todo }) => {
 
   const todoTextChangeHandler = str => setText(str);
 
-  const toggleTodoHandler = () => dispatch(todoToggled(todo.id));
+  const toggleTodoHandler = () => dispatch(todoToggledAsync(todo));
 
   const editTodoTextHandler = () => {
     if (initialText !== text) {
-      dispatch(todoTextEdited(todo.id, text));
+      dispatch(todoTextEditedAsync({ id: todo.id, text }));
       setInitialText(text);
     }
   };
   const todoColorChangeHandler = () => {
     if (demoColor !== todo.color) {
-      dispatch(todoColorChanged(todo.id, demoColor));
+      dispatch(todoColorChangedAsync({ id: todo.id, color: demoColor }));
     }
   };
 

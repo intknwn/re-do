@@ -14,7 +14,7 @@ import Stack from '../styled/Stack';
 
 import { AddIcon } from '@chakra-ui/icons';
 
-import { todoAdded } from '../../features/todos/todosSlice';
+import { todoAddedAsync } from '../../features/todos/todosSlice';
 
 const TodoInput = () => {
   const [inputValue, setInputValue] = useState('');
@@ -26,14 +26,14 @@ const TodoInput = () => {
     const value = e.target.value.trim();
 
     if (value && e.key === 'Enter') {
-      dispatch(todoAdded(value));
+      dispatch(todoAddedAsync(value));
 
       setInputValue('');
     }
   };
 
   const addTodoHandler = () => {
-    dispatch(todoAdded(inputValue));
+    dispatch(todoAddedAsync(inputValue));
 
     setInputValue('');
   };
