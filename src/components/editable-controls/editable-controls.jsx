@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { CheckIcon, CloseIcon, EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import { Colors } from '../../config';
-import { todoDeleted } from '../../features/todos/todosSlice';
+import { todoDeletedAsync } from '../../features/todos/todosSlice';
 
 export default function EditableControls({
   todo,
@@ -30,7 +30,7 @@ export default function EditableControls({
 
   const { onOpen } = useDisclosure();
 
-  const deleteTodoHandler = () => dispatch(todoDeleted(todo.id));
+  const deleteTodoHandler = () => dispatch(todoDeletedAsync(todo.id));
 
   const colorMenuItems = Object.values(Colors).map(color => (
     <MenuItem

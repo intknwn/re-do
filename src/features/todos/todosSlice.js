@@ -1,5 +1,9 @@
-import { createSlice, createSelector } from '@reduxjs/toolkit';
-import { Colors } from '../../config';
+import {
+  createSlice,
+  createSelector,
+  createAsyncThunk,
+} from '@reduxjs/toolkit';
+
 import { getMaxId } from '../../helpers';
 
 import {
@@ -10,50 +14,21 @@ import {
 
 import { selectSortType, SortType } from '../sorting/sortingSlice';
 
-const initialState = [
-  {
-    id: 1,
-    text: 'Learn HTML',
-    color: Colors.PINK,
-    isCompleted: false,
-    created: '2022-08-23T17:55:12.403Z',
-  },
-  {
-    id: 2,
-    text: 'Learn CSS',
-    color: Colors.BLUE,
-    isCompleted: true,
-    created: '2022-08-22T17:55:12.403Z',
-  },
-  {
-    id: 3,
-    text: 'Learn JS',
-    color: Colors.ORANGE,
-    isCompleted: false,
-    created: '2022-08-21T17:55:12.403Z',
-  },
-];
+import {
+  fetchTodos,
+  addTodo,
+  deleteTodo,
+  toggleTodo,
+  updateTodoText,
+  updateTodoColor,
+} from '../../firebase/functions';
 
 const todosSlice = createSlice({
   name: 'todos',
-  initialState,
+  initialState: [],
   reducers: {
-    todoAdded: {
-      reducer(state, action) {
-        const { text, created, isCompleted } = action.payload;
-        const id = getMaxId(state) + 1;
-
-        return [...state, { id, text, created, isCompleted }];
-      },
-      prepare(text) {
-        return {
-          payload: {
-            text,
-            created: new Date().toISOString(),
-            isCompleted: false,
-          },
-        };
-      },
+    todoAdded(state, action) {
+      return [...state, action.payload];
     },
     todoDeleted(state, action) {
       const id = action.payload;
@@ -74,48 +49,37 @@ const todosSlice = createSlice({
         };
       });
     },
-    todoTextEdited: {
-      reducer(state, action) {
-        const { id, text } = action.payload;
+    todoTextEdited(state, action) {
+      const { id, text } = action.payload;
 
-        return state.map(todo => {
-          if (todo.id !== id) {
-            return todo;
-          }
+      return state.map(todo => {
+        if (todo.id !== id) {
+          return todo;
+        }
 
-          return {
-            ...todo,
-            text,
-          };
-        });
-      },
-      prepare(id, color) {
         return {
-          payload: { id, color },
+          ...todo,
+          text,
         };
-      },
+      });
     },
-    todoColorChanged: {
-      reducer(state, action) {
-        const { id, color } = action.payload;
+    todoColorChanged(state, action) {
+      const { id, color } = action.payload;
 
-        return state.map(todo => {
-          if (todo.id !== id) {
-            return todo;
-          }
+      return state.map(todo => {
+        if (todo.id !== id) {
+          return todo;
+        }
 
-          return {
-            ...todo,
-            color,
-          };
-        });
-      },
-      prepare(id, color) {
         return {
-          payload: { id, color },
+          ...todo,
+          color,
         };
-      },
+      });
     },
+  },
+  extraReducers(builder) {
+    builder.addCase(getTodos.fulfilled, (state, action) => action.payload);
   },
 });
 
@@ -180,6 +144,86 @@ export const selectSortedTodos = createSelector(
     };
 
     return [...todos].sort(SortFn[sortType]);
+  }
+);
+
+export const getTodos = createAsyncThunk(
+  'todos/getTodos',
+  async () => await fetchTodos()
+);
+
+export const todoAddedAsync = createAsyncThunk(
+  'todos/todoAddedAsync',
+  async (text, { getState, dispatch }) => {
+    const { todos } = getState();
+    const id = getMaxId(todos) + 1;
+
+    const todo = {
+      id,
+      text,
+      created: new Date().toISOString(),
+      isCompleted: false,
+    };
+
+    try {
+      await addTodo(todo);
+
+      dispatch(todoAdded(todo));
+    } catch (e) {
+      console.log(`Something went wrong: ${e}`);
+    }
+  }
+);
+
+export const todoDeletedAsync = createAsyncThunk(
+  `todos/todoDeletedAsync`,
+  async (id, { dispatch }) => {
+    try {
+      await deleteTodo(id);
+
+      dispatch(todoDeleted(id));
+    } catch (e) {
+      console.log(`Something went wrong: ${e}`);
+    }
+  }
+);
+
+export const todoToggledAsync = createAsyncThunk(
+  `todos/todoToggledAsync`,
+  async (todo, { dispatch }) => {
+    try {
+      await toggleTodo(todo);
+
+      dispatch(todoToggled(todo.id));
+    } catch (e) {
+      console.log(`Something went wrong: ${e}`);
+    }
+  }
+);
+
+export const todoTextEditedAsync = createAsyncThunk(
+  `todos/todoTextEditedAsync`,
+  async ({ id, text }, { dispatch }) => {
+    try {
+      await updateTodoText(id, text);
+
+      dispatch(todoTextEdited({ id, text }));
+    } catch (e) {
+      console.log(`Something went wrong: ${e}`);
+    }
+  }
+);
+
+export const todoColorChangedAsync = createAsyncThunk(
+  `todos/todoColorChangedAsync`,
+  async ({ id, color }, { dispatch }) => {
+    try {
+      await updateTodoColor(id, color);
+
+      dispatch(todoColorChanged({ id, color }));
+    } catch (e) {
+      console.log(`Something went wrong: ${e}`);
+    }
   }
 );
 
