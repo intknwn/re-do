@@ -1,13 +1,5 @@
 import { db } from './firebase';
-import {
-  ref,
-  getDatabase,
-  get,
-  set,
-  child,
-  remove,
-  update,
-} from 'firebase/database';
+import { ref, get, set, child, remove, update } from 'firebase/database';
 
 const database = ref(db);
 
