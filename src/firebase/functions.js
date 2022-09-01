@@ -36,3 +36,7 @@ export const updateTodoText = async (id, text) => {
 export const updateTodoColor = async (id, color) => {
   return update(child(database, `todos/${id}`), { color });
 };
+
+export const createUser = async (id, name) => {
+  return set(child(database, `users/${id}`), name);
+};

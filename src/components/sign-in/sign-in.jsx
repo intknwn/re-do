@@ -25,8 +25,12 @@ import { RiLoginBoxFill } from 'react-icons/ri';
 import { Formik, Field } from 'formik';
 import * as Yup from 'yup';
 
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from 'firebase/auth';
 import { auth } from '../../firebase/firebase';
+import { createUser } from '../../firebase/functions';
 
 import {
   userAuthStatusChanged,
@@ -63,16 +67,26 @@ const SignIn = () => {
 
   const formTypeChangeHandler = () => setIsSignUpForm(!isSignUpForm);
 
-  const submitHandler = async ({ email, password }) => {
+  const signInHandler = async ({ email, password }) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+
+      dispatch(userAuthStatusChanged(true));
+      dispatch(userDetailsAdded({ email: user.email }));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const signUpHandler = async ({ name, email, password }) => {
+    try {
+      const { user } = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      dispatch(userAuthStatusChanged(true));
-      dispatch(userDetailsAdded({ email: userCredential.user.email }));
+      createUser(user.uid, name);
     } catch (e) {
       console.log(e);
     }
@@ -112,7 +126,7 @@ const SignIn = () => {
                   'Passwords must match'
                 ),
               })}
-              onSubmit={submitHandler}
+              onSubmit={isSignUpForm ? signUpHandler : signInHandler}
             >
               {({ handleSubmit, errors, touched }) => (
                 <form id="login" onSubmit={handleSubmit}>
