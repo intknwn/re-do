@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import {
@@ -18,6 +18,8 @@ import {
   Stack,
   FormControl,
   FormErrorMessage,
+  Text,
+  Box,
 } from '@chakra-ui/react';
 import { RiLoginBoxFill } from 'react-icons/ri';
 import { Formik, Field } from 'formik';
@@ -31,18 +33,18 @@ import {
   userDetailsAdded,
 } from '../../features/user/userSlice';
 
-const PasswordInput = () => {
-  const [show, setShow] = React.useState(false);
+const PasswordInput = ({ id, name, placeholder }) => {
+  const [show, setShow] = useState(false);
   const clickHandler = () => setShow(!show);
 
   return (
     <InputGroup size="md">
       <Field
         as={Input}
-        id="password"
-        name="password"
+        id={id}
+        name={name}
         type={show ? 'text' : 'password'}
-        placeholder="Password"
+        placeholder={placeholder}
         pr="4"
       />
       <InputRightElement width="14">
@@ -57,6 +59,9 @@ const PasswordInput = () => {
 const SignIn = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const dispatch = useDispatch();
+  const [isSignUpForm, setIsSignUpForm] = useState(false);
+
+  const formTypeChangeHandler = () => setIsSignUpForm(!isSignUpForm);
 
   const submitHandler = async ({ email, password }) => {
     try {
@@ -91,19 +96,39 @@ const SignIn = () => {
           <ModalBody>
             <Formik
               initialValues={{
+                name: '',
                 email: '',
                 password: '',
+                passconf: '',
               }}
               validationSchema={Yup.object({
-                email: Yup.string().email().required(),
-                password: Yup.string().required(),
-                // .min(8, 'Password is too short - should be 8 chars minimum.')
+                name: Yup.string().required('Name is a required field'),
+                email: Yup.string()
+                  .email()
+                  .required('Email is a required field'),
+                password: Yup.string().required('Password is a required field'),
+                passconf: Yup.string().oneOf(
+                  [Yup.ref('password'), null],
+                  'Passwords must match'
+                ),
               })}
               onSubmit={submitHandler}
             >
               {({ handleSubmit, errors, touched }) => (
                 <form id="login" onSubmit={handleSubmit}>
                   <Stack spacing="3">
+                    {isSignUpForm ? (
+                      <FormControl isInvalid={!!errors.name && touched.name}>
+                        <Field
+                          as={Input}
+                          id="name"
+                          name="name"
+                          type="text"
+                          placeholder="Name"
+                        />
+                        <FormErrorMessage>{errors.name}</FormErrorMessage>
+                      </FormControl>
+                    ) : null}
                     <FormControl isInvalid={!!errors.email && touched.email}>
                       <Field
                         as={Input}
@@ -117,16 +142,51 @@ const SignIn = () => {
                     <FormControl
                       isInvalid={!!errors.password && touched.password}
                     >
-                      <PasswordInput />
+                      <PasswordInput
+                        id="password"
+                        name="password"
+                        placeholder="Password"
+                      />
                       <FormErrorMessage>{errors.password}</FormErrorMessage>
                     </FormControl>
+                    {isSignUpForm ? (
+                      <FormControl
+                        isInvalid={!!errors.passconf && touched.passconf}
+                      >
+                        <PasswordInput
+                          id="passconf"
+                          name="passconf"
+                          placeholder="Password again"
+                        />
+                        <FormErrorMessage>{errors.passconf}</FormErrorMessage>
+                      </FormControl>
+                    ) : null}
                   </Stack>
                 </form>
               )}
             </Formik>
           </ModalBody>
 
-          <ModalFooter>
+          <ModalFooter justifyContent="space-between">
+            {isSignUpForm ? (
+              <Box>
+                <Text as="span" mr="1">
+                  Already have an account?
+                </Text>
+                <Button variant="link" onClick={formTypeChangeHandler}>
+                  Sign In
+                </Button>
+              </Box>
+            ) : (
+              <Box>
+                <Text as="span" mr="1">
+                  Don't have an account?
+                </Text>
+                <Button variant="link" onClick={formTypeChangeHandler}>
+                  Sign Up
+                </Button>
+              </Box>
+            )}
             <Button form="login" size="md" type="submit">
               Submit
             </Button>
