@@ -37,24 +37,57 @@ import {
   userDetailsAdded,
 } from '../../features/user/userSlice';
 
-const PasswordInput = ({ id, name, placeholder }) => {
-  const [show, setShow] = useState(false);
-  const clickHandler = () => setShow(!show);
+const signUpSchema = Yup.object({
+  name: Yup.string().required('Name is a required field'),
+  email: Yup.string().email().required('Email is a required field'),
+  password: Yup.string().required('Password is a required field'),
+  passconf: Yup.string().oneOf(
+    [Yup.ref('password'), null],
+    'Passwords must match'
+  ),
+});
 
+const signInSchema = Yup.object({
+  email: Yup.string().email().required('Email is a required field'),
+  password: Yup.string().required('Password is a required field'),
+});
+
+const signUpInitialValues = {
+  name: '',
+  email: '',
+  password: '',
+  passconf: '',
+};
+
+const signInInitialValues = {
+  email: '',
+  password: '',
+};
+
+const PasswordInput = ({
+  id,
+  name,
+  placeholder,
+  isPassHidden,
+  clickHandler,
+  noControls,
+}) => {
   return (
     <InputGroup size="md">
       <Field
         as={Input}
         id={id}
         name={name}
-        type={show ? 'text' : 'password'}
+        type={isPassHidden ? 'password' : 'text'}
         placeholder={placeholder}
         pr="4"
       />
       <InputRightElement width="14">
-        <Button h="8" w="12" size="xs" onClick={clickHandler}>
-          {show ? 'Hide' : 'Show'}
-        </Button>
+        {noControls ? null : (
+          <Button h="8" w="12" size="xs" onClick={clickHandler}>
+            {isPassHidden ? 'Show' : 'Hide'}
+          </Button>
+        )}
       </InputRightElement>
     </InputGroup>
   );
@@ -64,21 +97,37 @@ const SignIn = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const dispatch = useDispatch();
   const [isSignUpForm, setIsSignUpForm] = useState(false);
+  const [isPassHidden, setIsPassHidden] = useState(true);
 
   const formTypeChangeHandler = () => setIsSignUpForm(!isSignUpForm);
+  const showPasswordHandler = () => setIsPassHidden(!isPassHidden);
 
-  const signInHandler = async ({ email, password }) => {
+  const signInHandler = async ({ email, password }, { setFieldError }) => {
+    debugger;
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
 
       dispatch(userAuthStatusChanged(true));
       dispatch(userDetailsAdded({ email: user.email }));
     } catch (e) {
-      console.log(e);
+      if (e.code === 'auth/user-not-found') {
+        setFieldError('email', `Email is incorrect or doesn't exist`);
+        return;
+      }
+
+      if (e.code === 'auth/wrong-password') {
+        setFieldError('password', `The password is incorrect`);
+        return;
+      }
+
+      throw e;
     }
   };
 
-  const signUpHandler = async ({ name, email, password }) => {
+  const signUpHandler = async (
+    { name, email, password },
+    { setFieldError }
+  ) => {
     try {
       const { user } = await createUserWithEmailAndPassword(
         auth,
@@ -88,7 +137,12 @@ const SignIn = () => {
 
       createUser(user.uid, name);
     } catch (e) {
-      console.log(e);
+      if (e.code === 'auth/email-already-in-use') {
+        setFieldError('email', `User with this email already exists`);
+        return;
+      }
+
+      throw e;
     }
   };
 
@@ -109,23 +163,10 @@ const SignIn = () => {
           <ModalCloseButton />
           <ModalBody>
             <Formik
-              initialValues={{
-                name: '',
-                email: '',
-                password: '',
-                passconf: '',
-              }}
-              validationSchema={Yup.object({
-                name: Yup.string().required('Name is a required field'),
-                email: Yup.string()
-                  .email()
-                  .required('Email is a required field'),
-                password: Yup.string().required('Password is a required field'),
-                passconf: Yup.string().oneOf(
-                  [Yup.ref('password'), null],
-                  'Passwords must match'
-                ),
-              })}
+              initialValues={
+                isSignUpForm ? signUpInitialValues : signInInitialValues
+              }
+              validationSchema={isSignUpForm ? signUpSchema : signInSchema}
               onSubmit={isSignUpForm ? signUpHandler : signInHandler}
             >
               {({ handleSubmit, errors, touched }) => (
@@ -160,6 +201,8 @@ const SignIn = () => {
                         id="password"
                         name="password"
                         placeholder="Password"
+                        isPassHidden={isPassHidden}
+                        clickHandler={showPasswordHandler}
                       />
                       <FormErrorMessage>{errors.password}</FormErrorMessage>
                     </FormControl>
@@ -171,6 +214,9 @@ const SignIn = () => {
                           id="passconf"
                           name="passconf"
                           placeholder="Password again"
+                          isPassHidden={isPassHidden}
+                          clickHandler={showPasswordHandler}
+                          noControls
                         />
                         <FormErrorMessage>{errors.passconf}</FormErrorMessage>
                       </FormControl>
