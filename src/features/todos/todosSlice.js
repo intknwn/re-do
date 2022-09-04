@@ -4,7 +4,7 @@ import {
   createAsyncThunk,
 } from '@reduxjs/toolkit';
 
-import { getMaxId } from '../../helpers';
+import { nanoid } from 'nanoid';
 
 import {
   selectStatus,
@@ -27,8 +27,25 @@ const todosSlice = createSlice({
   name: 'todos',
   initialState: [],
   reducers: {
+    todoReset() {
+      return [];
+    },
     todoAdded(state, action) {
       return [...state, action.payload];
+    },
+    todoAddedLocally: {
+      reducer(state, action) {
+        return [...state, action.payload];
+      },
+      prepare(text) {
+        return {
+          payload: {
+            text,
+            id: nanoid(),
+            created: new Date().toISOString(),
+          },
+        };
+      },
     },
     todoDeleted(state, action) {
       const id = action.payload;
@@ -149,20 +166,22 @@ export const selectSortedTodos = createSelector(
 
 export const getTodos = createAsyncThunk(
   'todos/getTodos',
-  async () => await fetchTodos()
+  async uid => await fetchTodos(uid)
 );
 
 export const todoAddedAsync = createAsyncThunk(
   'todos/todoAddedAsync',
-  async (text, { getState, dispatch }) => {
-    const { todos } = getState();
-    const id = getMaxId(todos) + 1;
+  async (
+    { text, created = new Date().toISOString(), isCompleted = false },
+    { getState, dispatch }
+  ) => {
+    const { user } = getState();
 
     const todo = {
-      id,
+      uid: user.details.uid,
       text,
-      created: new Date().toISOString(),
-      isCompleted: false,
+      created,
+      isCompleted,
     };
 
     try {
@@ -228,7 +247,9 @@ export const todoColorChangedAsync = createAsyncThunk(
 );
 
 export const {
+  todoReset,
   todoAdded,
+  todoAddedLocally,
   todoDeleted,
   todoToggled,
   todoTextEdited,

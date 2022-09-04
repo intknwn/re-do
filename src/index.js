@@ -7,12 +7,9 @@ import reportWebVitals from './reportWebVitals';
 import * as serviceWorker from './serviceWorker';
 import store from './store';
 import { theme } from './theme';
-import { getTodos } from './features/todos/todosSlice';
 
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
-
-store.dispatch(getTodos());
 
 root.render(
   <StrictMode>

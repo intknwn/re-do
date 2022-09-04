@@ -7,6 +7,7 @@ import {
   userAuthStatusChanged,
   userDetailsAdded,
 } from '../../features/user/userSlice';
+import { todoReset } from '../../features/todos/todosSlice';
 
 const toastConfig = {
   position: 'top',
@@ -30,6 +31,7 @@ const SignOut = () => {
 
       dispatch(userAuthStatusChanged(false));
       dispatch(userDetailsAdded(null));
+      dispatch(todoReset());
     } catch (e) {
       toast({
         title: 'Something went wrong...',

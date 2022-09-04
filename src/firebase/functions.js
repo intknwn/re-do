@@ -1,10 +1,23 @@
 import { db } from './firebase';
-import { ref, get, set, child, remove, update } from 'firebase/database';
+import {
+  ref,
+  get,
+  set,
+  push,
+  child,
+  remove,
+  update,
+  query,
+  orderByChild,
+  equalTo,
+} from 'firebase/database';
 
 const database = ref(db);
 
-export const fetchTodos = async () => {
-  const snapshot = await get(child(database, 'todos'));
+export const fetchTodos = async uid => {
+  const snapshot = await get(
+    query(ref(db, 'todos'), orderByChild('uid'), equalTo(uid))
+  );
 
   const todos = [];
 
@@ -16,7 +29,11 @@ export const fetchTodos = async () => {
 };
 
 export const addTodo = async todo => {
-  return set(child(database, `todos/${todo.id}`), todo);
+  const todoId = push(child(database, 'todos')).key;
+
+  todo.id = todoId;
+
+  return update(database, { [`todos/${todoId}`]: todo });
 };
 
 export const deleteTodo = async id => {

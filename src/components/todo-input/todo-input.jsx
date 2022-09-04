@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useColorModeValue } from '@chakra-ui/react';
 
 import {
@@ -14,26 +14,34 @@ import Stack from '../styled/Stack';
 
 import { AddIcon } from '@chakra-ui/icons';
 
-import { todoAddedAsync } from '../../features/todos/todosSlice';
+import {
+  todoAddedLocally,
+  todoAddedAsync,
+} from '../../features/todos/todosSlice';
+import { selectUserAuthStatus } from '../../features/user/userSlice';
 
 const TodoInput = () => {
   const [inputValue, setInputValue] = useState('');
   const dispatch = useDispatch();
+  const auth = useSelector(selectUserAuthStatus);
 
   const onChangeHandler = e => setInputValue(e.target.value);
+  const dispatchAction = auth
+    ? text => dispatch(todoAddedAsync({ text }))
+    : text => dispatch(todoAddedLocally(text));
 
   const keyDownHandler = e => {
     const value = e.target.value.trim();
 
     if (value && e.key === 'Enter') {
-      dispatch(todoAddedAsync(value));
+      dispatchAction(value);
 
       setInputValue('');
     }
   };
 
   const addTodoHandler = () => {
-    dispatch(todoAddedAsync(inputValue));
+    dispatchAction(inputValue);
 
     setInputValue('');
   };
