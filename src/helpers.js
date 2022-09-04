@@ -13,6 +13,4 @@ export const getMonth = () =>
     month: 'long',
   });
 
-export const getMaxId = state => Math.max(...state.map(item => item.id));
-
 export const capitalize = str => str[0].toUpperCase() + str.slice(1);

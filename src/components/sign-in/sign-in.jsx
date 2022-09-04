@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
   useDisclosure,
@@ -37,6 +37,13 @@ import {
   userAuthStatusChanged,
   userDetailsAdded,
 } from '../../features/user/userSlice';
+
+import {
+  selectTodos,
+  todoAddedAsync,
+  getTodos,
+  todoReset,
+} from '../../features/todos/todosSlice';
 
 const signUpSchema = Yup.object({
   name: Yup.string().required('Name is a required field'),
@@ -111,6 +118,7 @@ const SignIn = () => {
   const [isSignUpForm, setIsSignUpForm] = useState(false);
   const [isPassHidden, setIsPassHidden] = useState(true);
   const toast = useToast();
+  const todos = useSelector(selectTodos);
 
   const formTypeChangeHandler = () => setIsSignUpForm(!isSignUpForm);
   const showPasswordHandler = () => setIsPassHidden(!isPassHidden);
@@ -125,7 +133,14 @@ const SignIn = () => {
       });
 
       dispatch(userAuthStatusChanged(true));
-      dispatch(userDetailsAdded({ email: user.email }));
+      dispatch(userDetailsAdded({ uid: user.uid, email: user.email }));
+
+      if (todos.length > 0) {
+        todos.forEach(todo => dispatch(todoAddedAsync(todo)));
+        dispatch(todoReset());
+      }
+
+      dispatch(getTodos(user.uid));
     } catch (e) {
       if (e.code === 'auth/user-not-found') {
         setFieldError('email', `Email is incorrect or doesn't exist`);
