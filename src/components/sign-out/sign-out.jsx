@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-import { IconButton } from '@chakra-ui/react';
+import { useToast, IconButton } from '@chakra-ui/react';
 import { RiLogoutBoxFill } from 'react-icons/ri';
 import { auth } from '../../firebase/firebase';
 import { signOut } from 'firebase/auth';
@@ -8,17 +8,35 @@ import {
   userDetailsAdded,
 } from '../../features/user/userSlice';
 
+const toastConfig = {
+  position: 'top',
+  duration: 3000,
+  isClosable: true,
+};
+
 const SignOut = () => {
   const dispatch = useDispatch();
+  const toast = useToast();
 
   const signOutHandler = async () => {
     try {
       await signOut(auth);
 
+      toast({
+        title: 'Successfully logged out!',
+        status: 'success',
+        ...toastConfig,
+      });
+
       dispatch(userAuthStatusChanged(false));
       dispatch(userDetailsAdded(null));
     } catch (e) {
-      console.log(e);
+      toast({
+        title: 'Something went wrong...',
+        description: e.code,
+        status: 'error',
+        ...toastConfig,
+      });
     }
   };
 
