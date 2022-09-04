@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 
 import {
   useDisclosure,
+  useToast,
   IconButton,
   Modal,
   ModalOverlay,
@@ -39,7 +40,9 @@ import {
 
 const signUpSchema = Yup.object({
   name: Yup.string().required('Name is a required field'),
-  email: Yup.string().email().required('Email is a required field'),
+  email: Yup.string()
+    .email('Must be a valid email')
+    .required('Email is a required field'),
   password: Yup.string().required('Password is a required field'),
   passconf: Yup.string().oneOf(
     [Yup.ref('password'), null],
@@ -48,7 +51,9 @@ const signUpSchema = Yup.object({
 });
 
 const signInSchema = Yup.object({
-  email: Yup.string().email().required('Email is a required field'),
+  email: Yup.string()
+    .email('Must be a valid email')
+    .required('Email is a required field'),
   password: Yup.string().required('Password is a required field'),
 });
 
@@ -62,6 +67,13 @@ const signUpInitialValues = {
 const signInInitialValues = {
   email: '',
   password: '',
+};
+
+const toastConfig = {
+  status: 'success',
+  position: 'top',
+  duration: 3000,
+  isClosable: true,
 };
 
 const PasswordInput = ({
@@ -98,14 +110,19 @@ const SignIn = () => {
   const dispatch = useDispatch();
   const [isSignUpForm, setIsSignUpForm] = useState(false);
   const [isPassHidden, setIsPassHidden] = useState(true);
+  const toast = useToast();
 
   const formTypeChangeHandler = () => setIsSignUpForm(!isSignUpForm);
   const showPasswordHandler = () => setIsPassHidden(!isPassHidden);
 
   const signInHandler = async ({ email, password }, { setFieldError }) => {
-    debugger;
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
+
+      toast({
+        title: 'Successfully logged in!',
+        ...toastConfig,
+      });
 
       dispatch(userAuthStatusChanged(true));
       dispatch(userDetailsAdded({ email: user.email }));
@@ -135,6 +152,12 @@ const SignIn = () => {
         password
       );
 
+      toast({
+        title: 'Success!',
+        description: "We've created an account for you.",
+        ...toastConfig,
+      });
+
       createUser(user.uid, name);
     } catch (e) {
       if (e.code === 'auth/email-already-in-use') {
@@ -158,22 +181,26 @@ const SignIn = () => {
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Log In</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Formik
-              initialValues={
-                isSignUpForm ? signUpInitialValues : signInInitialValues
-              }
-              validationSchema={isSignUpForm ? signUpSchema : signInSchema}
-              onSubmit={isSignUpForm ? signUpHandler : signInHandler}
-            >
-              {({ handleSubmit, errors, touched }) => (
+
+        <Formik
+          initialValues={
+            isSignUpForm ? signUpInitialValues : signInInitialValues
+          }
+          validationSchema={isSignUpForm ? signUpSchema : signInSchema}
+          onSubmit={isSignUpForm ? signUpHandler : signInHandler}
+        >
+          {({ handleSubmit, errors, touched, isSubmitting }) => (
+            <ModalContent>
+              <ModalHeader>Log In</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
                 <form id="login" onSubmit={handleSubmit}>
                   <Stack spacing="3">
                     {isSignUpForm ? (
-                      <FormControl isInvalid={!!errors.name && touched.name}>
+                      <FormControl
+                        isInvalid={!!errors.name && touched.name}
+                        isDisabled={isSubmitting}
+                      >
                         <Field
                           as={Input}
                           id="name"
@@ -184,7 +211,10 @@ const SignIn = () => {
                         <FormErrorMessage>{errors.name}</FormErrorMessage>
                       </FormControl>
                     ) : null}
-                    <FormControl isInvalid={!!errors.email && touched.email}>
+                    <FormControl
+                      isInvalid={!!errors.email && touched.email}
+                      isDisabled={isSubmitting}
+                    >
                       <Field
                         as={Input}
                         id="email"
@@ -196,6 +226,7 @@ const SignIn = () => {
                     </FormControl>
                     <FormControl
                       isInvalid={!!errors.password && touched.password}
+                      isDisabled={isSubmitting}
                     >
                       <PasswordInput
                         id="password"
@@ -209,6 +240,7 @@ const SignIn = () => {
                     {isSignUpForm ? (
                       <FormControl
                         isInvalid={!!errors.passconf && touched.passconf}
+                        isDisabled={isSubmitting}
                       >
                         <PasswordInput
                           id="passconf"
@@ -223,35 +255,42 @@ const SignIn = () => {
                     ) : null}
                   </Stack>
                 </form>
-              )}
-            </Formik>
-          </ModalBody>
-
-          <ModalFooter justifyContent="space-between">
-            {isSignUpForm ? (
-              <Box>
-                <Text as="span" mr="1">
-                  Already have an account?
-                </Text>
-                <Button variant="link" onClick={formTypeChangeHandler}>
-                  Sign In
+              </ModalBody>
+              <ModalFooter justifyContent="space-between">
+                {isSignUpForm ? (
+                  <Box>
+                    <Text as="span" mr="1">
+                      Already have an account?
+                    </Text>
+                    <Button
+                      variant="link"
+                      onClick={formTypeChangeHandler}
+                      disabled={isSubmitting}
+                    >
+                      Sign In
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box>
+                    <Text as="span" mr="1">
+                      Don't have an account?
+                    </Text>
+                    <Button
+                      variant="link"
+                      onClick={formTypeChangeHandler}
+                      disabled={isSubmitting}
+                    >
+                      Sign Up
+                    </Button>
+                  </Box>
+                )}
+                <Button form="login" size="md" type="submit">
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
                 </Button>
-              </Box>
-            ) : (
-              <Box>
-                <Text as="span" mr="1">
-                  Don't have an account?
-                </Text>
-                <Button variant="link" onClick={formTypeChangeHandler}>
-                  Sign Up
-                </Button>
-              </Box>
-            )}
-            <Button form="login" size="md" type="submit">
-              Submit
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+              </ModalFooter>
+            </ModalContent>
+          )}
+        </Formik>
       </Modal>
     </>
   );
