@@ -14,14 +14,15 @@ import {
   ModalFooter,
   Button,
   Input,
-  InputGroup,
-  InputRightElement,
   Stack,
   FormControl,
   FormErrorMessage,
   Text,
   Box,
 } from '@chakra-ui/react';
+
+import PasswordInput from '../password-input/password-input';
+
 import { RiLoginBoxFill } from 'react-icons/ri';
 import { Formik, Field } from 'formik';
 import * as Yup from 'yup';
@@ -44,6 +45,8 @@ import {
   getTodos,
   todoReset,
 } from '../../features/todos/todosSlice';
+
+import { delay } from '../../helpers';
 
 const signUpSchema = Yup.object({
   name: Yup.string().required('Name is a required field'),
@@ -81,35 +84,6 @@ const toastConfig = {
   position: 'top',
   duration: 3000,
   isClosable: true,
-};
-
-const PasswordInput = ({
-  id,
-  name,
-  placeholder,
-  isPassHidden,
-  clickHandler,
-  noControls,
-}) => {
-  return (
-    <InputGroup size="md">
-      <Field
-        as={Input}
-        id={id}
-        name={name}
-        type={isPassHidden ? 'password' : 'text'}
-        placeholder={placeholder}
-        pr="4"
-      />
-      <InputRightElement width="14">
-        {noControls ? null : (
-          <Button h="8" w="12" size="xs" onClick={clickHandler}>
-            {isPassHidden ? 'Show' : 'Hide'}
-          </Button>
-        )}
-      </InputRightElement>
-    </InputGroup>
-  );
 };
 
 const SignIn = () => {
@@ -204,9 +178,9 @@ const SignIn = () => {
           validationSchema={isSignUpForm ? signUpSchema : signInSchema}
           onSubmit={isSignUpForm ? signUpHandler : signInHandler}
         >
-          {({ handleSubmit, errors, touched, isSubmitting }) => (
+          {({ handleSubmit, handleBlur, errors, touched, isSubmitting }) => (
             <ModalContent>
-              <ModalHeader>Log In</ModalHeader>
+              <ModalHeader>{isSignUpForm ? 'Sign Up' : 'Log In'}</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
                 <form id="login" onSubmit={handleSubmit}>
@@ -222,6 +196,7 @@ const SignIn = () => {
                           name="name"
                           type="text"
                           placeholder="Name"
+                          onBlur={delay(handleBlur, 300)}
                         />
                         <FormErrorMessage>{errors.name}</FormErrorMessage>
                       </FormControl>
@@ -236,6 +211,7 @@ const SignIn = () => {
                         name="email"
                         type="email"
                         placeholder="Email"
+                        onBlur={delay(handleBlur, 300)}
                       />
                       <FormErrorMessage>{errors.email}</FormErrorMessage>
                     </FormControl>
@@ -249,6 +225,7 @@ const SignIn = () => {
                         placeholder="Password"
                         isPassHidden={isPassHidden}
                         clickHandler={showPasswordHandler}
+                        blurHandler={handleBlur}
                       />
                       <FormErrorMessage>{errors.password}</FormErrorMessage>
                     </FormControl>
@@ -263,6 +240,7 @@ const SignIn = () => {
                           placeholder="Password again"
                           isPassHidden={isPassHidden}
                           clickHandler={showPasswordHandler}
+                          blurHandler={handleBlur}
                           noControls
                         />
                         <FormErrorMessage>{errors.passconf}</FormErrorMessage>
@@ -272,33 +250,20 @@ const SignIn = () => {
                 </form>
               </ModalBody>
               <ModalFooter justifyContent="space-between">
-                {isSignUpForm ? (
-                  <Box>
-                    <Text as="span" mr="1">
-                      Already have an account?
-                    </Text>
-                    <Button
-                      variant="link"
-                      onClick={formTypeChangeHandler}
-                      disabled={isSubmitting}
-                    >
-                      Sign In
-                    </Button>
-                  </Box>
-                ) : (
-                  <Box>
-                    <Text as="span" mr="1">
-                      Don't have an account?
-                    </Text>
-                    <Button
-                      variant="link"
-                      onClick={formTypeChangeHandler}
-                      disabled={isSubmitting}
-                    >
-                      Sign Up
-                    </Button>
-                  </Box>
-                )}
+                <Box>
+                  <Text as="span" mr="1">
+                    {isSignUpForm
+                      ? 'Already have an account?'
+                      : "Don't have an account?"}
+                  </Text>
+                  <Button
+                    variant="link"
+                    onClick={formTypeChangeHandler}
+                    disabled={isSubmitting}
+                  >
+                    {isSignUpForm ? 'Log In' : 'Sign Up'}
+                  </Button>
+                </Box>
                 <Button form="login" size="md" type="submit">
                   {isSubmitting ? 'Submitting...' : 'Submit'}
                 </Button>
