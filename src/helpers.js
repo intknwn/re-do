@@ -14,3 +14,5 @@ export const getMonth = () =>
   });
 
 export const capitalize = str => str[0].toUpperCase() + str.slice(1);
+
+export const delay = (fn, delay) => e => setTimeout(() => fn(e), delay);
