@@ -8,6 +8,7 @@ import {
   userDetailsAdded,
 } from '../../features/user/userSlice';
 import { todoReset } from '../../features/todos/todosSlice';
+import { persistor } from '../../store';
 
 const toastConfig = {
   position: 'top',
@@ -32,6 +33,7 @@ const SignOut = () => {
       dispatch(userAuthStatusChanged(false));
       dispatch(userDetailsAdded(null));
       dispatch(todoReset());
+      persistor.purge();
     } catch (e) {
       toast({
         title: 'Something went wrong...',
