@@ -1,40 +1,33 @@
 import React from 'react';
-import {
-  ChakraProvider,
-  Box,
-  Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
-  theme,
-} from '@chakra-ui/react';
+import { useSelector } from 'react-redux';
+
+import Date from './components/date/date';
+import TodoInput from './components/todo-input/todo-input';
+import TodosList from './components/todos-list/todos-list';
+import SignIn from './components/sign-in/sign-in';
+import SignOut from './components/sign-out/sign-out';
+
+import { ChakraProvider, Container, Box } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
-import { Logo } from './Logo';
+
+import { theme } from './theme';
+
+import { selectUserAuthStatus } from './features/user/userSlice';
 
 function App() {
+  const userAuthStatus = useSelector(selectUserAuthStatus);
+
   return (
     <ChakraProvider theme={theme}>
-      <Box textAlign="center" fontSize="xl">
-        <Grid minH="100vh" p={3}>
-          <ColorModeSwitcher justifySelf="flex-end" />
-          <VStack spacing={8}>
-            <Logo h="40vmin" pointerEvents="none" />
-            <Text>
-              Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
-            </Text>
-            <Link
-              color="teal.500"
-              href="https://chakra-ui.com"
-              fontSize="2xl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn Chakra
-            </Link>
-          </VStack>
-        </Grid>
-      </Box>
+      <Container pt="20" pos="relative">
+        <ColorModeSwitcher />
+        <Box pos="absolute" right="2" top="2">
+          {userAuthStatus ? <SignOut /> : <SignIn />}
+        </Box>
+        <Date />
+        <TodoInput />
+        <TodosList />
+      </Container>
     </ChakraProvider>
   );
 }
