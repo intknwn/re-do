@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   auth: false,
   details: {},
+  theme: 'blue',
 };
 
 const userSlice = createSlice({
@@ -15,11 +16,17 @@ const userSlice = createSlice({
     userDetailsAdded(state, action) {
       return { ...state, details: action.payload };
     },
+    colorThemeChanged(state, action) {
+      return { ...state, theme: action.payload };
+    },
   },
 });
 
 export const selectUserAuthStatus = state => state.user.auth;
 
-export const { userAuthStatusChanged, userDetailsAdded } = userSlice.actions;
+export const selectColorTheme = state => state.user.theme;
+
+export const { userAuthStatusChanged, userDetailsAdded, colorThemeChanged } =
+  userSlice.actions;
 
 export default userSlice.reducer;
