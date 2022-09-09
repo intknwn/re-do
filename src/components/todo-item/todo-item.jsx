@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   useColorModeValue,
   InputGroup,
@@ -19,9 +19,9 @@ import {
   todoTextEditedAsync,
   todoColorChangedAsync,
 } from '../../features/todos/todosSlice';
+import { selectColorTheme } from '../../features/user/userSlice';
 
 import EditableControls from '../editable-controls/editable-controls';
-import { theme } from '../../theme';
 
 const TodoItem = ({ todo }) => {
   const dispatch = useDispatch();
@@ -29,6 +29,7 @@ const TodoItem = ({ todo }) => {
   const [initialText, setInitialText] = useState(todo.text);
   const [text, setText] = useState(todo.text);
   const [demoColor, setDemoColor] = useState('');
+  const colorTheme = useSelector(selectColorTheme);
 
   const listItemBg = useColorModeValue('white', 'transparent');
 
@@ -69,7 +70,7 @@ const TodoItem = ({ todo }) => {
         pos="absolute"
         left="2"
         top="-7"
-        color={theme.colors.blue[500]}
+        color={`${colorTheme}.500`}
       >
         {new Date(todo.created).toLocaleDateString('en-US', {
           year: 'numeric',
